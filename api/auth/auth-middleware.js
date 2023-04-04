@@ -76,6 +76,23 @@ const rolAdiGecerlimi = (req, res, next) => {
       "message": "rol adı 32 karakterden fazla olamaz"
     }
   */
+ try {
+  if(!req.body.role_name || !req.body.role_name.trim()){
+    req.body.role_name = "student";
+    next();
+  } else{
+    req.body.role_name = req.body.role_name.trim();
+    if(req.body.role_name === "admin"){
+      res.status(422).json({ message: "Rol adı admin olamaz" });
+    } else if (req.body.role_name.length > 32 ){
+      res.status(422).json({ message: "rol adı 32 karakterden fazla olamaz" });
+    } else{
+      next();
+    }
+  }
+ } catch (error) {
+  next(error)
+ }
 };
 
 module.exports = {

@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../secrets/index"); // bu secret'ı kullanın!
 const userModel = require("../users/users-model");
 
-router.post("/register", rolAdiGecerlimi, (req, res, next) => {
+router.post("/register", rolAdiGecerlimi, async (req, res, next) => {
   /**
     [POST] /api/auth/register { "username": "anna", "password": "1234", "role_name": "angel" }
 
@@ -17,6 +17,20 @@ router.post("/register", rolAdiGecerlimi, (req, res, next) => {
       "role_name": "angel"
     }
    */
+  try {
+    const { username, password, role_name } = req.body;
+    if(!username || !password || !role_name){
+      res.status(401).json({ message: "Geçersiz kriter" });
+    } else{
+      const newUser = { username, password, role_name };
+      newUser.password = bcrypt.hashSync(password, 6);
+      const userArr = await userModel.ekle(newUser);
+      const user = userArr[0]
+      res.status(201).json(user);
+    }
+  } catch (error) {
+    next(error)
+  }
 });
 
 router.post("/login", usernameVarmi, async (req, res, next) => {
