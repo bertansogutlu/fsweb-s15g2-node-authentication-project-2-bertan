@@ -27,7 +27,8 @@ const sinirli = (req, res, next) => {
       if(error){
         res.status(401).json({ message: "Token gecersizdir" });
       } else{
-        next()
+        req.decodedJWT = decodedJWT;
+        next();
       }
     })
   }
@@ -48,6 +49,15 @@ const sadece = (role_name) => (req, res, next) => {
 
     Tekrar authorize etmekten kaçınmak için kodu çözülmüş tokeni req nesnesinden çekin!
   */
+ try {
+  if(req.decodedJWT.role_name !== role_name){
+    res.status(403).json({ message: "Bu, senin için değil" });
+  } else{
+    next();
+  }
+ } catch (error) {
+  next(error);
+ }
 };
 
 const usernameVarmi = async (req, res, next) => {
