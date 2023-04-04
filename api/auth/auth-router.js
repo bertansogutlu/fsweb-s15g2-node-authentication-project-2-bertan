@@ -1,6 +1,9 @@
 const router = require("express").Router();
-const { usernameVarmi, rolAdiGecerlimi } = require('./auth-middleware');
-const { JWT_SECRET } = require("../secrets"); // bu secret'ı kullanın!
+const { usernameVarmi, rolAdiGecerlimi } = require("./auth-middleware");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../secrets/index"); // bu secret'ı kullanın!
+const userModel = require("../users/users-model");
 
 router.post("/register", rolAdiGecerlimi, (req, res, next) => {
   /**
@@ -16,8 +19,7 @@ router.post("/register", rolAdiGecerlimi, (req, res, next) => {
    */
 });
 
-
-router.post("/login", usernameVarmi, (req, res, next) => {
+router.post("/login", usernameVarmi, async (req, res, next) => {
   /**
     [POST] /api/auth/login { "username": "sue", "password": "1234" }
 
@@ -36,6 +38,45 @@ router.post("/login", usernameVarmi, (req, res, next) => {
       "role_name": "admin" // giriş yapan kulanıcının role adı
     }
    */
+  try {
+    if (!req.body.password) {
+      res.status(401).json({ message: "Geçersiz kriter" });
+    } else {
+      const users = await userModel.goreBul({
+        "users.username": req.body.username,
+      });
+      const user = users[0];
+      const isValid = bcrypt.compareSync(req.body.password, user.password);
+      if (isValid) {
+        console.log(user);
+        const token = generateToken(user);
+        res
+          .status(200)
+          .json({
+            subject: user.user_id,
+            message: `${user.username} geri geldi!`,
+            token: token,
+          });
+      } else {
+        res.status(401).json({ message: "Geçersiz kriter" });
+      }
+    }
+  } catch (error) {
+    next(error);
+  }
 });
+
+function generateToken(user) {
+  const payload = {
+    subject: user.user_id,
+    username: user.username,
+    role_name: user.role_name,
+  };
+  const secret = JWT_SECRET;
+  const options = {
+    expiresIn: "1h",
+  };
+  return jwt.sign(payload, secret, options);
+}
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const { JWT_SECRET } = require("../secrets"); // bu secreti kullanın!
+const userModel = require("../users/users-model");
 
 const sinirli = (req, res, next) => {
   /*
@@ -16,9 +17,9 @@ const sinirli = (req, res, next) => {
 
     Alt akıştaki middlewarelar için hayatı kolaylaştırmak için kodu çözülmüş tokeni req nesnesine koyun!
   */
-}
+};
 
-const sadece = role_name => (req, res, next) => {
+const sadece = (role_name) => (req, res, next) => {
   /*
     
 	Kullanıcı, Authorization headerında, kendi payloadu içinde bu fonksiyona bağımsız değişken olarak iletilen 
@@ -30,10 +31,9 @@ const sadece = role_name => (req, res, next) => {
 
     Tekrar authorize etmekten kaçınmak için kodu çözülmüş tokeni req nesnesinden çekin!
   */
-}
+};
 
-
-const usernameVarmi = (req, res, next) => {
+const usernameVarmi = async (req, res, next) => {
   /*
     req.body de verilen username veritabanında yoksa
     status: 401
@@ -41,8 +41,21 @@ const usernameVarmi = (req, res, next) => {
       "message": "Geçersiz kriter"
     }
   */
-}
-
+  try {
+    if(!req.body.username){
+      res.status(401).json({ message: "Geçersiz kriter" });
+    } else{
+      const users = await userModel.goreBul({ 'users.username': req.body.username, })
+      if (users.length === 0) {
+        res.status(401).json({ message: "Geçersiz kriter" });
+      } else {
+        next()
+      }
+    }
+ } catch (error) {
+    next(error);
+  }
+};
 
 const rolAdiGecerlimi = (req, res, next) => {
   /*
@@ -63,11 +76,11 @@ const rolAdiGecerlimi = (req, res, next) => {
       "message": "rol adı 32 karakterden fazla olamaz"
     }
   */
-}
+};
 
 module.exports = {
   sinirli,
   usernameVarmi,
   rolAdiGecerlimi,
   sadece,
-}
+};
