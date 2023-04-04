@@ -2,7 +2,7 @@ const router = require("express").Router();
 const { usernameVarmi, rolAdiGecerlimi } = require("./auth-middleware");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../secrets/index"); // bu secret'ı kullanın!
+const { JWT_SECRET } = require("../secrets"); // bu secret'ı kullanın!
 const userModel = require("../users/users-model");
 
 router.post("/register", rolAdiGecerlimi, async (req, res, next) => {
