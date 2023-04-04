@@ -18,6 +18,7 @@ function bul() {
       }
     ]
    */
+  return db('users').join('roles','users.role_id','roles.role_id').select('users.user_id','users.username','roles.role_name')
 }
 
 function goreBul(filtre) {
@@ -34,6 +35,7 @@ function goreBul(filtre) {
       }
     ]
    */
+    return db('users').join('roles','users.role_id','roles.role_id').where(filtre).select('users.user_id','users.username','users.password','roles.role_name')
 }
 
 function idyeGoreBul(user_id) {
@@ -47,6 +49,7 @@ function idyeGoreBul(user_id) {
       "role_name": "instructor"
     }
    */
+    return db('users').join('roles','users.role_id','roles.role_id').where('user_id',user_id).select('users.user_id','users.username','roles.role_name')
 }
 
 /**
